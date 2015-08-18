@@ -1,2 +1,2 @@
-# android_popular_movies_app
+# android-popular-movies-app
 Udacity - Project 1
