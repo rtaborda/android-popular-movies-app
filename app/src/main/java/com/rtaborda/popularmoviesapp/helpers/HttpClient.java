@@ -73,6 +73,4 @@ public class HttpClient {
         return responseJsonStr;
     }
 
-
-
 }
