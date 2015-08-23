@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
 import com.rtaborda.popularmoviesapp.R;
+import com.rtaborda.popularmoviesapp.entities.Movie;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -16,13 +17,13 @@ import java.util.List;
 /**
  * Created by Rui on 22/08/2015.
  */
-public class MoviePosterArrayAdapter extends ArrayAdapter<String> {
+public class MoviePosterArrayAdapter extends ArrayAdapter<Movie> {
     private final String LOG_TAG = MoviePosterArrayAdapter.class.getSimpleName();
 
     private Context _context;
-    private ArrayList<String> _items;
+    private ArrayList<Movie> _items;
 
-    public MoviePosterArrayAdapter(Context context, int resource, ArrayList<String> items) {
+    public MoviePosterArrayAdapter(Context context, int resource, ArrayList<Movie> items) {
         super(context, resource, items);
         _items = items;
         _context = context;
@@ -30,19 +31,19 @@ public class MoviePosterArrayAdapter extends ArrayAdapter<String> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
+        View view = convertView;
 
-        if (v == null) {
+        if (view == null) {
             LayoutInflater vi;
             vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.grid_item_movie, null);
+            view = vi.inflate(R.layout.grid_item_movie, null);
         }
 
-        ImageView imageView = (ImageView) v.findViewById(R.id.grid_item_movie_img);
-        String posterURL = _items.get(position);
+        ImageView imageView = (ImageView) view.findViewById(R.id.grid_item_movie_img);
+        String posterURL = _items.get(position).PosterSmallURL;
         Picasso.with(_context).load(posterURL).into(imageView);
 
-        return v;
+        return view;
     }
 
 }

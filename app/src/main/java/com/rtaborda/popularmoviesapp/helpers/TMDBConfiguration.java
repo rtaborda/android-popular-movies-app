@@ -5,5 +5,6 @@ package com.rtaborda.popularmoviesapp.helpers;
  */
 public class TMDBConfiguration {
     public String BaseURL;
-    public String PosterSize;
+    public String SmallPosterSize;
+    public String BigPosterSize;
 }

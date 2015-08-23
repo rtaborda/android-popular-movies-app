@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.rtaborda.popularmoviesapp.adapters.MoviePosterArrayAdapter;
+import com.rtaborda.popularmoviesapp.entities.Movie;
 import com.rtaborda.popularmoviesapp.helpers.HttpClient;
 import com.rtaborda.popularmoviesapp.helpers.TMDBConfiguration;
 
@@ -19,11 +20,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Console;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -48,17 +49,17 @@ public class MoviesFragment extends Fragment {
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
         // The ArrayAdapter will take data from a source and
         // use it to populate the GridView it's attached to.
-        _mMoviesAdapter = new MoviePosterArrayAdapter(getActivity(), 0, new ArrayList<String>());
+        _mMoviesAdapter = new MoviePosterArrayAdapter(getActivity(), 0, new ArrayList<Movie>());
 
         gridView.setAdapter(_mMoviesAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                String movie = _mMoviesAdapter.getItem(position);
+                Movie movie = _mMoviesAdapter.getItem(position);
                 //Intent intent = new Intent(getActivity(), DetailActivity.class)
                 //        .putExtra(Intent.EXTRA_TEXT, forecast);
                 //startActivity(intent);
-                Log.d(LOG_TAG, movie);
+                Log.d(LOG_TAG, movie.Id);
             }
         });
 
@@ -147,18 +148,21 @@ public class MoviesFragment extends Fragment {
 
             TMDBConfiguration config = new TMDBConfiguration();
             config.BaseURL = imgsConfigJson.getString(TMDB_CONFIG_BASEURL);
-            config.PosterSize = imgsConfigJson.getJSONArray(TMDB_CONFIG_POSTERSIZES).getString(3);
+
+            JSONArray posterSizes = imgsConfigJson.getJSONArray(TMDB_CONFIG_POSTERSIZES);
+            config.SmallPosterSize = posterSizes.getString(2);
+            config.BigPosterSize = posterSizes.getString(4);
             return config;
         }
 
     }
 
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
+    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected Movie[] doInBackground(String... params) {
             // If there's no zip code, there's nothing to look up.  Verify size of params.
             //if (params.length == 0) {
             //    return null;
@@ -195,6 +199,9 @@ public class MoviesFragment extends Fragment {
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
+            } catch (ParseException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
             }
 
             // This will only happen if there was an error getting or parsing the forecast.
@@ -202,11 +209,11 @@ public class MoviesFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(String[] result) {
+        protected void onPostExecute(Movie[] result) {
             if (result != null) {
                 _mMoviesAdapter.clear();
-                for(String movieImageStr : result) {
-                    _mMoviesAdapter.add(movieImageStr);
+                for(Movie movie : result) {
+                    _mMoviesAdapter.add(movie);
                 }
                 // New data is back from the server.  Hooray!
             }
@@ -217,22 +224,39 @@ public class MoviesFragment extends Fragment {
          * Take the String representing the movie list in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
          */
-        private String[] getMovieDataFromJson(String moviesJsonStr) throws JSONException {
+        private Movie[] getMovieDataFromJson(String moviesJsonStr) throws JSONException, ParseException {
             // These are the names of the JSON objects that need to be extracted.
             final String TMDB_RESULTS = "results";
-            final String TMDB_POSTER_IMAGE = "poster_path";
+            final String TMDB_MOVIE_ID = "id";
+            final String TMDB_MOVIE_TITLE = "original_title";
+            final String TMDB_MOVIE_OVERVIEW = "overview";
+            final String TMDB_MOVIE_RELEASE = "release_date";
+            final String TMDB_MOVIE_RATING = "vote_average";
+            final String TMDB_MOVIE_POSTER_IMAGE = "poster_path";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray moviesArray = moviesJson.getJSONArray(TMDB_RESULTS);
 
-            String[] posterUrls = new String[moviesArray.length()];
+            Movie[] movies = new Movie[moviesArray.length()];
             JSONObject movieJson;
+            String posterPath;
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
             for(int i=0; i<moviesArray.length();++i) {
                 movieJson = moviesArray.getJSONObject(i);
-                posterUrls[i] = _configuration.BaseURL + _configuration.PosterSize + movieJson.getString(TMDB_POSTER_IMAGE);
+
+                movies[i] = new Movie();
+                movies[i].Id = movieJson.getString(TMDB_MOVIE_ID);
+                movies[i].Title = movieJson.getString(TMDB_MOVIE_TITLE);
+                movies[i].Overview = movieJson.getString(TMDB_MOVIE_OVERVIEW);
+                movies[i].ReleaseDate = format.parse(movieJson.getString(TMDB_MOVIE_RELEASE));
+                movies[i].Rating = Double.parseDouble(movieJson.getString(TMDB_MOVIE_RATING));
+                posterPath = movieJson.getString(TMDB_MOVIE_POSTER_IMAGE);
+                movies[i].PosterSmallURL = _configuration.BaseURL + _configuration.SmallPosterSize + posterPath;
+                movies[i].PosterBigURL = _configuration.BaseURL + _configuration.BigPosterSize + posterPath;
             }
 
-            return posterUrls;
+            return movies;
         }
     }
 
