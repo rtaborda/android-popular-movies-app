@@ -1,5 +1,6 @@
 package com.rtaborda.popularmoviesapp;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -31,7 +32,7 @@ import java.util.ArrayList;
  */
 public class MoviesFragment extends Fragment {
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
-    private final String TMDB_API_KEY = "<INSERT API KEY HERE>";
+    private final String TMDB_API_KEY = "";
 
     private TMDBConfiguration _configuration;
     private MoviePosterArrayAdapter _mMoviesAdapter;
@@ -56,10 +57,15 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Movie movie = _mMoviesAdapter.getItem(position);
-                //Intent intent = new Intent(getActivity(), DetailActivity.class)
-                //        .putExtra(Intent.EXTRA_TEXT, forecast);
-                //startActivity(intent);
-                Log.d(LOG_TAG, movie.Id);
+
+                Intent intent = new Intent(getActivity(), DetailsActivity.class);
+                intent.putExtra("title", movie.Title);
+                intent.putExtra("overview", movie.Overview);
+                intent.putExtra("big_poster", movie.PosterBigURL);
+                intent.putExtra("rating", movie.Rating);
+                intent.putExtra("release_date", new SimpleDateFormat("dd-MM-yyyy").format(movie.ReleaseDate));
+
+                startActivity(intent);
             }
         });
 
@@ -199,9 +205,6 @@ public class MoviesFragment extends Fragment {
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
-            } catch (ParseException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
             }
 
             // This will only happen if there was an error getting or parsing the forecast.
@@ -224,7 +227,7 @@ public class MoviesFragment extends Fragment {
          * Take the String representing the movie list in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
          */
-        private Movie[] getMovieDataFromJson(String moviesJsonStr) throws JSONException, ParseException {
+        private Movie[] getMovieDataFromJson(String moviesJsonStr) throws JSONException {
             // These are the names of the JSON objects that need to be extracted.
             final String TMDB_RESULTS = "results";
             final String TMDB_MOVIE_ID = "id";
@@ -239,21 +242,38 @@ public class MoviesFragment extends Fragment {
 
             Movie[] movies = new Movie[moviesArray.length()];
             JSONObject movieJson;
-            String posterPath;
+            String posterPath, releaseDate, rating;
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
             for(int i=0; i<moviesArray.length();++i) {
-                movieJson = moviesArray.getJSONObject(i);
+                try {
+                    movieJson = moviesArray.getJSONObject(i);
 
-                movies[i] = new Movie();
-                movies[i].Id = movieJson.getString(TMDB_MOVIE_ID);
-                movies[i].Title = movieJson.getString(TMDB_MOVIE_TITLE);
-                movies[i].Overview = movieJson.getString(TMDB_MOVIE_OVERVIEW);
-                movies[i].ReleaseDate = format.parse(movieJson.getString(TMDB_MOVIE_RELEASE));
-                movies[i].Rating = Double.parseDouble(movieJson.getString(TMDB_MOVIE_RATING));
-                posterPath = movieJson.getString(TMDB_MOVIE_POSTER_IMAGE);
-                movies[i].PosterSmallURL = _configuration.BaseURL + _configuration.SmallPosterSize + posterPath;
-                movies[i].PosterBigURL = _configuration.BaseURL + _configuration.BigPosterSize + posterPath;
+                    movies[i] = new Movie();
+                    movies[i].Id = movieJson.getString(TMDB_MOVIE_ID);
+                    movies[i].Title = movieJson.getString(TMDB_MOVIE_TITLE);
+                    movies[i].Overview = movieJson.getString(TMDB_MOVIE_OVERVIEW);
+
+                    rating = movieJson.getString(TMDB_MOVIE_RATING);
+                    if(rating != null && rating != "") {
+                        movies[i].Rating = Double.parseDouble(rating);
+                    }
+
+                    releaseDate = movieJson.getString(TMDB_MOVIE_RELEASE);
+                    if (releaseDate != null && releaseDate != "") {
+                        movies[i].ReleaseDate = format.parse(releaseDate);
+                    }
+
+                    posterPath = movieJson.getString(TMDB_MOVIE_POSTER_IMAGE);
+                    if (posterPath != null && posterPath != "") {
+                        movies[i].PosterSmallURL = _configuration.BaseURL + _configuration.SmallPosterSize + posterPath;
+                        movies[i].PosterBigURL = _configuration.BaseURL + _configuration.BigPosterSize + posterPath;
+                    }
+                }catch (ParseException ex) {
+                    Log.e(LOG_TAG, ex.getMessage(), ex);
+                    ex.printStackTrace();
+                    continue;
+                }
             }
 
             return movies;
