@@ -31,7 +31,7 @@ import java.util.ArrayList;
  */
 public class MoviesFragment extends Fragment {
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
-    private final String TMDB_API_KEY = "ff272392c96fcc9d214c82c49e0631be";
+    private final String TMDB_API_KEY = "<INSERT API KEY HERE>";
 
     private TMDBConfiguration _configuration;
     private MoviePosterArrayAdapter _mMoviesAdapter;
