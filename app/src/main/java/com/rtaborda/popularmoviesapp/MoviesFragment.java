@@ -1,8 +1,10 @@
 package com.rtaborda.popularmoviesapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,7 +34,7 @@ import java.util.ArrayList;
  */
 public class MoviesFragment extends Fragment {
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
-    private final String TMDB_API_KEY = "";
+    private final String TMDB_API_KEY = ""; //TODO Remove before pushing to master
 
     private TMDBConfiguration _configuration;
     private MoviePosterArrayAdapter _mMoviesAdapter;
@@ -80,10 +82,10 @@ public class MoviesFragment extends Fragment {
 
     private void updateMovies() {
         FetchMoviesTask moviesTask = new FetchMoviesTask();
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        //String location = prefs.getString(getString(R.string.pref_location_key),
-        //        getString(R.string.pref_location_default));
-        moviesTask.execute("TODO");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String sortBy = prefs.getString(getString(R.string.pref_sort_movies_by_key),
+                getString(R.string.sort_by_rating_desc_value));
+        moviesTask.execute(sortBy);
     }
 
     @Override
@@ -169,10 +171,9 @@ public class MoviesFragment extends Fragment {
 
         @Override
         protected Movie[] doInBackground(String... params) {
-            // If there's no zip code, there's nothing to look up.  Verify size of params.
-            //if (params.length == 0) {
-            //    return null;
-            //}
+            if (params.length == 0) {
+                return null;
+            }
 
             // Will contain the raw JSON response as a string.
             String moviesJsonStr;
@@ -188,7 +189,7 @@ public class MoviesFragment extends Fragment {
 
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendQueryParameter(API_KEY_PARAM, TMDB_API_KEY)
-                        .appendQueryParameter(SORT_BY_PARAM, "vote_average.desc") //TODO Move this to the settings
+                        .appendQueryParameter(SORT_BY_PARAM, params[0])
                         .appendQueryParameter(PAGE_PARAM, "1")
                         .build();
 
@@ -255,24 +256,24 @@ public class MoviesFragment extends Fragment {
                     movies[i].Overview = movieJson.getString(TMDB_MOVIE_OVERVIEW);
 
                     rating = movieJson.getString(TMDB_MOVIE_RATING);
-                    if(rating != null && rating != "") {
+                    if(rating != null && !rating.equals("")) {
                         movies[i].Rating = Double.parseDouble(rating);
                     }
 
                     releaseDate = movieJson.getString(TMDB_MOVIE_RELEASE);
-                    if (releaseDate != null && releaseDate != "") {
+                    if (releaseDate != null && !releaseDate.equals("")) {
                         movies[i].ReleaseDate = format.parse(releaseDate);
                     }
 
                     posterPath = movieJson.getString(TMDB_MOVIE_POSTER_IMAGE);
-                    if (posterPath != null && posterPath != "") {
+                    if (posterPath != null && !posterPath.equals("")) {
                         movies[i].PosterSmallURL = _configuration.BaseURL + _configuration.SmallPosterSize + posterPath;
                         movies[i].PosterBigURL = _configuration.BaseURL + _configuration.BigPosterSize + posterPath;
                     }
                 }catch (ParseException ex) {
                     Log.e(LOG_TAG, ex.getMessage(), ex);
                     ex.printStackTrace();
-                    continue;
+                    // continues
                 }
             }
 

@@ -1,0 +1,10 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:key="@string/pref_sort_movies_by_key"
+        android:title="@string/pref_sort_movies_by"
+        android:defaultValue="@string/sort_by_rating_desc_value"
+        android:entries="@array/pref_sort_movies_by_titles"
+        android:entryValues="@array/pref_sort_movies_by_values" />
+
+</PreferenceScreen>
