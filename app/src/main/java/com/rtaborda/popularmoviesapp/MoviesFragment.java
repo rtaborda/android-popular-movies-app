@@ -28,6 +28,9 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -52,7 +55,7 @@ public class MoviesFragment extends Fragment {
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
         // The ArrayAdapter will take data from a source and
         // use it to populate the GridView it's attached to.
-        _mMoviesAdapter = new MoviePosterArrayAdapter(getActivity(), 0, new ArrayList<Movie>());
+        _mMoviesAdapter = new MoviePosterArrayAdapter(getActivity(), R.layout.grid_item_movie, new ArrayList<Movie>());
 
         gridView.setAdapter(_mMoviesAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -75,9 +78,10 @@ public class MoviesFragment extends Fragment {
     }
 
 
-    private void getConfigurations() {
+    private void getConfigurations() throws InterruptedException, ExecutionException, TimeoutException {
         FetchConfigurationsTask configurationsTask = new FetchConfigurationsTask();
         configurationsTask.execute();
+        configurationsTask.get();
     }
 
     private void updateMovies() {
@@ -91,8 +95,20 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        getConfigurations();
-        updateMovies();
+
+        try {
+            getConfigurations();
+            updateMovies();
+        } catch (InterruptedException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
     }
 
 
@@ -158,7 +174,8 @@ public class MoviesFragment extends Fragment {
             config.BaseURL = imgsConfigJson.getString(TMDB_CONFIG_BASEURL);
 
             JSONArray posterSizes = imgsConfigJson.getJSONArray(TMDB_CONFIG_POSTERSIZES);
-            config.SmallPosterSize = posterSizes.getString(2);
+            JSONArray logoSizes = imgsConfigJson.getJSONArray("logo_sizes");
+            config.SmallPosterSize = logoSizes.getString(4);
             config.BigPosterSize = posterSizes.getString(4);
             return config;
         }
@@ -208,7 +225,7 @@ public class MoviesFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            // This will only happen if there was an error getting or parsing the forecast.
+            // This will only happen if there was an error getting or parsing the result.
             return null;
         }
 
@@ -216,9 +233,7 @@ public class MoviesFragment extends Fragment {
         protected void onPostExecute(Movie[] result) {
             if (result != null) {
                 _mMoviesAdapter.clear();
-                for(Movie movie : result) {
-                    _mMoviesAdapter.add(movie);
-                }
+                _mMoviesAdapter.addAll(result);
                 // New data is back from the server.  Hooray!
             }
         }
@@ -256,17 +271,17 @@ public class MoviesFragment extends Fragment {
                     movies[i].Overview = movieJson.getString(TMDB_MOVIE_OVERVIEW);
 
                     rating = movieJson.getString(TMDB_MOVIE_RATING);
-                    if(rating != null && !rating.equals("")) {
+                    if(!jsonPropertyIsEmpty(rating)) {
                         movies[i].Rating = Double.parseDouble(rating);
                     }
 
                     releaseDate = movieJson.getString(TMDB_MOVIE_RELEASE);
-                    if (releaseDate != null && !releaseDate.equals("")) {
+                    if (!jsonPropertyIsEmpty(releaseDate)) {
                         movies[i].ReleaseDate = format.parse(releaseDate);
                     }
 
                     posterPath = movieJson.getString(TMDB_MOVIE_POSTER_IMAGE);
-                    if (posterPath != null && !posterPath.equals("")) {
+                    if (!jsonPropertyIsEmpty(posterPath)) {
                         movies[i].PosterSmallURL = _configuration.BaseURL + _configuration.SmallPosterSize + posterPath;
                         movies[i].PosterBigURL = _configuration.BaseURL + _configuration.BigPosterSize + posterPath;
                     }
@@ -278,6 +293,10 @@ public class MoviesFragment extends Fragment {
             }
 
             return movies;
+        }
+
+        private Boolean jsonPropertyIsEmpty(String prop){
+            return prop == null || prop.equals("") || prop.equals("null");
         }
     }
 

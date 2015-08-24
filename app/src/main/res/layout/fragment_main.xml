@@ -13,8 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:stretchMode="columnWidth"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="5dp"
-        android:numColumns="2" />
+        android:columnWidth="@dimen/list_poster_size"
+        android:verticalSpacing="@dimen/list_vertical_spacing"
+        android:horizontalSpacing="@dimen/list_horizontal_spacing"
+        android:numColumns="auto_fit"
+        android:gravity="center" />
 
 </FrameLayout>

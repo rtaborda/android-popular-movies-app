@@ -21,12 +21,14 @@ public class MoviePosterArrayAdapter extends ArrayAdapter<Movie> {
     private final String LOG_TAG = MoviePosterArrayAdapter.class.getSimpleName();
 
     private Context _context;
+    private int _resource;
     private ArrayList<Movie> _items;
 
     public MoviePosterArrayAdapter(Context context, int resource, ArrayList<Movie> items) {
         super(context, resource, items);
         _items = items;
         _context = context;
+        _resource = resource;
     }
 
     @Override
@@ -35,8 +37,8 @@ public class MoviePosterArrayAdapter extends ArrayAdapter<Movie> {
 
         if (view == null) {
             LayoutInflater vi;
-            vi = LayoutInflater.from(getContext());
-            view = vi.inflate(R.layout.grid_item_movie, null);
+            vi = LayoutInflater.from(_context);
+            view = vi.inflate(_resource, null);
         }
 
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_item_movie_img);

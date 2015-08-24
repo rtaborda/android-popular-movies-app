@@ -1,5 +1,6 @@
 package com.rtaborda.popularmoviesapp;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -27,13 +28,19 @@ public class DetailsActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
 
         // The detail Activity called via intent.  Inspect the intent for movie data.
-        Intent intent = getActivity().getIntent();
+        Activity parentActivity = getActivity();
+        Intent intent = parentActivity.getIntent();
+
         if (intent != null && intent.hasExtra("title") && intent.hasExtra("overview")
                 && intent.hasExtra("big_poster") && intent.hasExtra("rating")
                 && intent.hasExtra("release_date")) {
 
+            String title = intent.getStringExtra("title");
+            // Set activity title to movie's title
+            parentActivity.setTitle(title);
+
             ((TextView) rootView.findViewById(R.id.textView_title))
-                    .setText(intent.getStringExtra("title"));
+                    .setText(title);
 
             ((TextView) rootView.findViewById(R.id.textView_overview))
                     .setText(intent.getStringExtra("overview"));
