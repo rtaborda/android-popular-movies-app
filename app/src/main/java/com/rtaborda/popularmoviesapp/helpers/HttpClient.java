@@ -70,6 +70,8 @@ public class HttpClient {
             }
         }
 
+        Log.d(LOG_TAG, urlToCall.toString());
+
         return responseJsonStr;
     }
 

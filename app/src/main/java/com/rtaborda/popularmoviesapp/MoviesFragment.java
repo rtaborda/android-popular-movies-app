@@ -41,6 +41,8 @@ public class MoviesFragment extends Fragment {
 
     private TMDBConfiguration _configuration;
     private MoviePosterArrayAdapter _mMoviesAdapter;
+    private ArrayList<Movie> _movieArrayList;
+    private String _sortBy;
 
 
     public MoviesFragment() {}
@@ -51,11 +53,20 @@ public class MoviesFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        // Get the sort by preference
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        _sortBy = prefs.getString(getString(R.string.pref_sort_movies_by_key),
+                getString(R.string.sort_by_rating_desc_value));
+
         // Get a reference to the ListView, and attach this adapter to it.
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
-        // The ArrayAdapter will take data from a source and
-        // use it to populate the GridView it's attached to.
-        _mMoviesAdapter = new MoviePosterArrayAdapter(getActivity(), R.layout.grid_item_movie, new ArrayList<Movie>());
+
+        _movieArrayList = new ArrayList<>();
+        _mMoviesAdapter = new MoviePosterArrayAdapter(
+                getActivity(),
+                R.layout.grid_item_movie,
+                _movieArrayList
+        );
 
         gridView.setAdapter(_mMoviesAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -68,49 +79,68 @@ public class MoviesFragment extends Fragment {
                 intent.putExtra("overview", movie.Overview);
                 intent.putExtra("big_poster", movie.PosterBigURL);
                 intent.putExtra("rating", movie.Rating);
-                intent.putExtra("release_date", new SimpleDateFormat("dd-MM-yyyy").format(movie.ReleaseDate));
+
+                if (movie.ReleaseDate != null) {
+                    intent.putExtra("release_date", new SimpleDateFormat("dd-MM-yyyy").format(movie.ReleaseDate));
+                } else {
+                    intent.putExtra("release_date", "Information not available");
+                }
 
                 startActivity(intent);
             }
         });
 
+        // Get the movies list from the saved instance state
+        if(savedInstanceState != null && savedInstanceState.containsKey("movieArrayList")) {
+            _movieArrayList = savedInstanceState.getParcelableArrayList("movieArrayList");
+        }
+
         return rootView;
     }
 
+    @Override
+    public void onStart(){
+        super.onStart();
 
-    private void getConfigurations() throws InterruptedException, ExecutionException, TimeoutException {
-        FetchConfigurationsTask configurationsTask = new FetchConfigurationsTask();
-        configurationsTask.execute();
-        configurationsTask.get();
-    }
-
-    private void updateMovies() {
-        FetchMoviesTask moviesTask = new FetchMoviesTask();
+        // If the users' order preference changed we need to get the list of movies again
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortBy = prefs.getString(getString(R.string.pref_sort_movies_by_key),
+        String newSortBy = prefs.getString(getString(R.string.pref_sort_movies_by_key),
                 getString(R.string.sort_by_rating_desc_value));
-        moviesTask.execute(sortBy);
+
+        if(_movieArrayList == null || _movieArrayList.isEmpty() || !_sortBy.equals(newSortBy)) {
+            _sortBy = newSortBy;
+            getConfigurations();
+            updateMovies();
+        } else {
+            _mMoviesAdapter.clear();
+            _mMoviesAdapter.addAll(_movieArrayList);
+        }
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onSaveInstanceState(Bundle outState) {
+        // Save the movies list to the saved instance state
+        outState.putParcelableArrayList("movieArrayList", _movieArrayList);
+        super.onSaveInstanceState(outState);
+    }
 
+
+    private void getConfigurations() {
+        FetchConfigurationsTask configurationsTask = new FetchConfigurationsTask();
+        configurationsTask.execute();
         try {
-            getConfigurations();
-            updateMovies();
+            configurationsTask.get();
         } catch (InterruptedException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         } catch (ExecutionException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
     }
 
+    private void updateMovies() {
+        FetchMoviesTask moviesTask = new FetchMoviesTask();
+        moviesTask.execute(_sortBy);
+    }
 
 
     public class FetchConfigurationsTask extends AsyncTask<Void, Void, TMDBConfiguration>{
