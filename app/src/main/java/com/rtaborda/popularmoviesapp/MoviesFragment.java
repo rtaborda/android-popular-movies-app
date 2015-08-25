@@ -107,12 +107,13 @@ public class MoviesFragment extends Fragment {
         String newSortBy = prefs.getString(getString(R.string.pref_sort_movies_by_key),
                 getString(R.string.sort_by_rating_desc_value));
 
-        if(_movieArrayList == null || _movieArrayList.isEmpty() || !_sortBy.equals(newSortBy)) {
+        if(_movieArrayList == null || _movieArrayList.size() == 0 || !_sortBy.equals(newSortBy)) {
             _sortBy = newSortBy;
             getConfigurations();
-            updateMovies();
         } else {
-            _mMoviesAdapter.clear();
+            ArrayList<Movie> aux = new ArrayList<>(_movieArrayList);
+            _mMoviesAdapter.clear(); // Clear actually clears the contents in the _movieArrayList
+            _movieArrayList = aux;
             _mMoviesAdapter.addAll(_movieArrayList);
         }
     }
@@ -128,13 +129,6 @@ public class MoviesFragment extends Fragment {
     private void getConfigurations() {
         FetchConfigurationsTask configurationsTask = new FetchConfigurationsTask();
         configurationsTask.execute();
-        try {
-            configurationsTask.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
     }
 
     private void updateMovies() {
@@ -184,6 +178,7 @@ public class MoviesFragment extends Fragment {
         protected void onPostExecute(TMDBConfiguration result){
             if(result != null){
                 _configuration = result;
+                updateMovies();
             }
         }
 
