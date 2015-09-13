@@ -18,6 +18,8 @@ import com.rtaborda.popularmoviesapp.adapters.MoviePosterArrayAdapter;
 import com.rtaborda.popularmoviesapp.entities.Movie;
 import com.rtaborda.popularmoviesapp.helpers.HttpClient;
 import com.rtaborda.popularmoviesapp.helpers.TMDBConfiguration;
+import com.rtaborda.popularmoviesapp.helpers.TMDBApiClient;
+import com.squareup.okhttp.OkHttpClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,12 +31,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import retrofit.RestAdapter;
+import retrofit.client.OkClient;
+
 /**
  * A placeholder fragment containing a simple view.
  */
 public class MoviesFragment extends Fragment {
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
-    private final String TMDB_API_KEY = ""; //TODO Remove before pushing to master
+    private final String TMDB_API_KEY = TMDBApiClient.TMDB_API_KEY; //TODO Remove before pushing to master
+
+    private TMDBApiClient _tmdbApiClient;
 
     private TMDBConfiguration _configuration;
     private MoviePosterArrayAdapter _mMoviesAdapter;
@@ -124,6 +131,7 @@ public class MoviesFragment extends Fragment {
 
 
     private void getConfigurations() {
+        initializeTMDBApiClient();
         FetchConfigurationsTask configurationsTask = new FetchConfigurationsTask();
         configurationsTask.execute();
     }
@@ -133,42 +141,23 @@ public class MoviesFragment extends Fragment {
         moviesTask.execute(_sortBy);
     }
 
+    private void initializeTMDBApiClient(){
+        RestAdapter.Builder builder = new RestAdapter.Builder()
+                .setEndpoint("http://api.themoviedb.org/3")
+                .setClient(new OkClient(new OkHttpClient()));
+
+        RestAdapter adapter = builder.build();
+        // for full retrofit logs
+        adapter.setLogLevel(RestAdapter.LogLevel.FULL);
+
+        _tmdbApiClient = adapter.create(TMDBApiClient.class);
+    }
+
 
     public class FetchConfigurationsTask extends AsyncTask<Void, Void, TMDBConfiguration>{
-        private final String LOG_TAG = FetchConfigurationsTask.class.getSimpleName();
-
         @Override
         protected TMDBConfiguration doInBackground(Void... params) {
-            // Will contain the raw JSON response as a string.
-            String configurationJsonStr;
-
-            try {
-                // Construct the URL for the TheMovieDB query
-                // Possible parameters are available at TMDB's movies API page, at
-                // http://docs.themoviedb.apiary.io/#reference/discover/discovermovie
-                final String FORECAST_BASE_URL = "http://api.themoviedb.org/3/configuration?";
-                final String API_KEY_PARAM = "api_key";
-
-                Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                        .appendQueryParameter(API_KEY_PARAM, TMDB_API_KEY)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-                configurationJsonStr = HttpClient.GetJsonResponse(url);
-            } catch (MalformedURLException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-                return null;
-            }
-
-            try {
-                return getConfigurationDataFromJson(configurationJsonStr);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-
-            return null;
+            return _tmdbApiClient.getConfiguration();
         }
 
         @Override
@@ -178,30 +167,6 @@ public class MoviesFragment extends Fragment {
                 updateMovies();
             }
         }
-
-        /**
-         * Take the String representing the movie list in JSON Format and
-         * pull out the data we need to construct the Strings needed for the wireframes.
-         */
-        private TMDBConfiguration getConfigurationDataFromJson(String configurationJsonStr) throws JSONException {
-            // These are the names of the JSON objects that need to be extracted.
-            final String TMDB_CONFIG_IMAGES = "images";
-            final String TMDB_CONFIG_BASEURL = "base_url";
-            final String TMDB_CONFIG_POSTERSIZES = "poster_sizes";
-
-            JSONObject configurationJson = new JSONObject(configurationJsonStr);
-            JSONObject imgsConfigJson = configurationJson.getJSONObject(TMDB_CONFIG_IMAGES);
-
-            TMDBConfiguration config = new TMDBConfiguration();
-            config.BaseURL = imgsConfigJson.getString(TMDB_CONFIG_BASEURL);
-
-            JSONArray posterSizes = imgsConfigJson.getJSONArray(TMDB_CONFIG_POSTERSIZES);
-            JSONArray logoSizes = imgsConfigJson.getJSONArray("logo_sizes");
-            config.SmallPosterSize = logoSizes.getString(4);
-            config.BigPosterSize = posterSizes.getString(4);
-            return config;
-        }
-
     }
 
 
@@ -304,8 +269,8 @@ public class MoviesFragment extends Fragment {
 
                     posterPath = movieJson.getString(TMDB_MOVIE_POSTER_IMAGE);
                     if (!jsonPropertyIsEmpty(posterPath)) {
-                        movies[i].PosterSmallURL = _configuration.BaseURL + _configuration.SmallPosterSize + posterPath;
-                        movies[i].PosterBigURL = _configuration.BaseURL + _configuration.BigPosterSize + posterPath;
+                        movies[i].PosterSmallURL = _configuration.images.base_url + _configuration.images.logo_sizes[4] + posterPath;
+                        movies[i].PosterBigURL = _configuration.images.base_url + _configuration.images.poster_sizes[4] + posterPath;
                     }
                 }catch (ParseException ex) {
                     Log.e(LOG_TAG, ex.getMessage(), ex);
