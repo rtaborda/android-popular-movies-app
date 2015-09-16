@@ -1,8 +1,6 @@
 package com.rtaborda.popularmoviesapp.helpers;
 
-import com.rtaborda.popularmoviesapp.entities.Movie;
-
-import java.util.List;
+import com.rtaborda.popularmoviesapp.entities.MoviesResult;
 
 import retrofit.http.GET;
 import retrofit.http.Query;
@@ -17,5 +15,7 @@ public interface TMDBApiClient {
     TMDBConfiguration getConfiguration();
 
     @GET("/discover/movie?api_key=" + TMDB_API_KEY)
-    Movie[] getMovies(@Query("sort_by") String sortBy, @Query("page") String page);
+    MoviesResult getMovies(@Query("sort_by") String sortBy, @Query("page") String page);
+
+
 }

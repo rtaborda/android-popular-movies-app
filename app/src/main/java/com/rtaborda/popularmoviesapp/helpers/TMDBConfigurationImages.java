@@ -1,7 +1,5 @@
 package com.rtaborda.popularmoviesapp.helpers;
 
-import java.util.Map;
-
 /**
  * Created by Rui on 13/09/2015.
  */

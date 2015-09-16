@@ -3,29 +3,28 @@ package com.rtaborda.popularmoviesapp.entities;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.Date;
-
 /**
  * Created by Rui on 23/08/2015.
  */
 public class Movie implements Parcelable {
-    public String Id;
-    public String Title;
-    public String Overview;
-    public double Rating;
-    public Date ReleaseDate;
+    public String id;
+    public String original_title;
+    public String overview;
+    public String release_date;
+    public String poster_path;
+    public Double vote_average;
+
+    // Custom fields
     public String PosterSmallURL;
     public String PosterBigURL;
 
 
-    public Movie(){}
-
     private Movie(Parcel in) {
-        Id = in.readString();
-        Title = in.readString();
-        Overview = in.readString();
-        Rating = in.readDouble();
-        ReleaseDate = new Date(in.readLong());
+        id = in.readString();
+        original_title = in.readString();
+        overview = in.readString();
+        vote_average = in.readDouble();
+        release_date = in.readString();
         PosterSmallURL = in.readString();
         PosterBigURL = in.readString();
     }
@@ -37,15 +36,11 @@ public class Movie implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(Id);
-        dest.writeString(Title);
-        dest.writeString(Overview);
-        dest.writeDouble(Rating);
-        // This writing and reading Dates from a Parcelable was taken from here:
-        // http://stackoverflow.com/questions/21017404/reading-and-writing-java-util-date-from-parcelable-class
-        if(ReleaseDate != null) {
-            dest.writeLong(ReleaseDate.getTime());
-        }
+        dest.writeString(id);
+        dest.writeString(original_title);
+        dest.writeString(overview);
+        dest.writeDouble(vote_average);
+        dest.writeString(release_date);
         dest.writeString(PosterSmallURL);
         dest.writeString(PosterBigURL);
     }

@@ -12,7 +12,6 @@ import com.rtaborda.popularmoviesapp.entities.Movie;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Rui on 22/08/2015.

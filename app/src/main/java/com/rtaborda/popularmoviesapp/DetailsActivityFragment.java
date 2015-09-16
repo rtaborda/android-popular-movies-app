@@ -2,12 +2,11 @@ package com.rtaborda.popularmoviesapp;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,8 +20,6 @@ import butterknife.ButterKnife;
  * A placeholder fragment containing a simple view.
  */
 public class DetailsActivityFragment extends Fragment {
-    private static final String LOG_TAG = DetailsActivityFragment.class.getSimpleName();
-
     @Bind(R.id.textView_title) TextView _title;
     @Bind(R.id.textView_overview) TextView _overview;
     @Bind(R.id.textView_rating) TextView _rating;
@@ -43,25 +40,32 @@ public class DetailsActivityFragment extends Fragment {
         Activity parentActivity = getActivity();
         Intent intent = parentActivity.getIntent();
 
-        if (intent != null && intent.hasExtra("title") && intent.hasExtra("overview")
-                && intent.hasExtra("big_poster") && intent.hasExtra("rating")
-                && intent.hasExtra("release_date")) {
+        if (intent != null && intent.hasExtra("movie")) {
+            Movie movie = intent.getParcelableExtra("movie");
 
-            String title = intent.getStringExtra("title");
-            // Set activity title to movie's title
-            parentActivity.setTitle(title);
+            if(movie != null) {
+                // Set activity title to movie's title
+                parentActivity.setTitle(movie.original_title);
 
-            _title.setText(title);
-            _overview.setText(intent.getStringExtra("overview"));
-            _rating.setText(intent.getDoubleExtra("rating",  0.00) + "");
-            _release.setText(intent.getStringExtra("release_date"));
+                _title.setText(movie.original_title);
+                _overview.setText(movie.overview);
+                _rating.setText(movie.vote_average.toString());
 
-            Picasso.with(getActivity()).load(
-                    intent.getStringExtra("big_poster")
-            ).into(_poster);
+                if(!isStringNullOrEmpty(movie.release_date)) {
+                    _release.setText(movie.release_date);
+                }
+                else {
+                    _release.setText("Information not available");
+                }
+
+                Picasso.with(getActivity()).load(movie.PosterBigURL).into(_poster);
+            }
         }
 
         return rootView;
+    }
 
+    private Boolean isStringNullOrEmpty(String str){
+        return str == null || str.equals("") || str.equals("null");
     }
 }
