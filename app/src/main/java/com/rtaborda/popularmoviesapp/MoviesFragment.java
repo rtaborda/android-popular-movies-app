@@ -129,7 +129,7 @@ public class MoviesFragment extends Fragment {
     }
 
 
-    public class FetchConfigurationsTask extends AsyncTask<Void, Void, TMDBConfiguration>{
+    private class FetchConfigurationsTask extends AsyncTask<Void, Void, TMDBConfiguration>{
         @Override
         protected TMDBConfiguration doInBackground(Void... params) {
             return _tmdbApiClient.getConfiguration();
@@ -145,7 +145,7 @@ public class MoviesFragment extends Fragment {
     }
 
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
+    private class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
         @Override
         protected Movie[] doInBackground(String... params) {
             if (params.length == 0) {
