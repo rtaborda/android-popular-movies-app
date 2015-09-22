@@ -1,11 +1,14 @@
 package com.rtaborda.popularmoviesapp;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,8 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.rtaborda.popularmoviesapp.adapters.MoviePosterArrayAdapter;
+import com.rtaborda.popularmoviesapp.data.FavouriteProvider;
+import com.rtaborda.popularmoviesapp.data.FavouriteTitleColumns;
 import com.rtaborda.popularmoviesapp.entities.Movie;
 import com.rtaborda.popularmoviesapp.entities.MoviesResult;
 import com.rtaborda.popularmoviesapp.helpers.TMDBApiClient;
@@ -159,6 +164,10 @@ public class MoviesFragment extends Fragment {
                 movie.PosterBigURL = _configuration.images.base_url + _configuration.images.poster_sizes[4] + movie.poster_path;
             }
 
+
+            addToFavourites(result.results[0]);
+
+
             return result.results;
         }
 
@@ -170,5 +179,23 @@ public class MoviesFragment extends Fragment {
             }
         }
     }
+
+
+    public void addToFavourites(Movie movie) {
+
+        ContentValues values = new ContentValues();
+        values.put(FavouriteTitleColumns._ID, movie.id);
+        values.put(FavouriteTitleColumns.ORIGINAL_TITLE, movie.original_title);
+        values.put(FavouriteTitleColumns.OVERVIEW, movie.overview);
+        values.put(FavouriteTitleColumns.POSTER_PATH, movie.poster_path);
+        values.put(FavouriteTitleColumns.RELEASE_DATE, movie.release_date);
+        values.put(FavouriteTitleColumns.VOTE_AVERAGE, movie.vote_average);
+
+        getActivity().getContentResolver().insert(
+                FavouriteProvider.Favourites.CONTENT_URI,
+                values
+        );
+    }
+
 
 }

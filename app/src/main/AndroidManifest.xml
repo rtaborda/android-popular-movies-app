@@ -35,6 +35,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rtaborda.popularmoviesapp.MainActivity" />
         </activity>
+
+        <provider
+            android:authorities="com.rtaborda.popularmoviesapp.data.FavouriteProvider"
+            android:name="com.rtaborda.popularmoviesapp.data.generated.FavouriteProvider"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
