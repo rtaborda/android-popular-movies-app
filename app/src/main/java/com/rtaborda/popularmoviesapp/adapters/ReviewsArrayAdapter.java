@@ -5,7 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
+import com.rtaborda.popularmoviesapp.R;
 import com.rtaborda.popularmoviesapp.entities.Review;
 
 import java.util.ArrayList;
@@ -37,9 +39,13 @@ public class ReviewsArrayAdapter extends ArrayAdapter<Review> {
             view = vi.inflate(_resource, null);
         }
 
-//            ImageView imageView = (ImageView) view.findViewById(R.id.grid_item_movie_img);
-//            String posterURL = _items.get(position).PosterSmallURL;
-//            Picasso.with(_context).load(posterURL).into(imageView);
+        Review review = _items.get(position);
+
+        TextView textViewAuthor = (TextView) view.findViewById(R.id.list_item_review_author);
+        textViewAuthor.setText(review.author);
+
+        TextView textViewContent = (TextView) view.findViewById(R.id.list_item_review_content);
+        textViewContent.setText(review.content);
 
         return view;
     }

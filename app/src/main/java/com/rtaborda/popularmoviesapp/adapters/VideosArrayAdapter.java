@@ -5,7 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
+import com.rtaborda.popularmoviesapp.R;
 import com.rtaborda.popularmoviesapp.entities.Video;
 
 import java.util.ArrayList;
@@ -37,9 +39,8 @@ public class VideosArrayAdapter extends ArrayAdapter<Video> {
             view = vi.inflate(_resource, null);
         }
 
-//            ImageView imageView = (ImageView) view.findViewById(R.id.grid_item_movie_img);
-//            String posterURL = _items.get(position).PosterSmallURL;
-//            Picasso.with(_context).load(posterURL).into(imageView);
+        TextView textView = (TextView) view.findViewById(R.id.list_item_video_name);
+        textView.setText(_items.get(position).name);
 
         return view;
     }

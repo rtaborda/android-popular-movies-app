@@ -54,5 +54,41 @@
             android:layout_alignStart="@+id/textView_release"
             android:layout_marginTop="8dp" />
 
+        <TextView
+            android:id="@+id/textView_videos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_below="@+id/textView_overview"
+            android:layout_marginTop="15dp"
+            android:text="@string/activity_details_videos_title" />
+
+        <ListView
+            android:id="@+id/listview_videos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView_videos"
+            android:layout_alignStart="@+id/textView_videos"
+            android:divider="@android:color/transparent" />
+
+        <TextView
+            android:id="@+id/textView_reviews"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_below="@+id/listview_videos"
+            android:layout_marginTop="10dp"
+            android:text="@string/activity_details_reviews_title" />
+
+        <ListView
+            android:id="@+id/listview_reviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView_reviews"
+            android:layout_alignStart="@+id/textView_reviews"
+            android:divider="@android:color/transparent"
+            android:layout_marginTop="10dp"
+            android:dividerHeight="10dp" />
+
     </RelativeLayout>
 </ScrollView>

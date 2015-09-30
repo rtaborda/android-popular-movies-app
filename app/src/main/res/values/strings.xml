@@ -2,5 +2,9 @@
     <string name="app_name">Popular Movies App</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_details">DetailsActivity</string>
+
+    <!-- Details -->
+    <string name="activity_details_title">DetailsActivity</string>
+    <string name="activity_details_videos_title">Trailers</string>
+    <string name="activity_details_reviews_title">Reviews</string>
 </resources>

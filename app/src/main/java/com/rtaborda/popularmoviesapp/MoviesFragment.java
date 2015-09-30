@@ -164,10 +164,6 @@ public class MoviesFragment extends Fragment {
                 movie.PosterBigURL = _configuration.images.base_url + _configuration.images.poster_sizes[4] + movie.poster_path;
             }
 
-
-            addToFavourites(result.results[0]);
-
-
             return result.results;
         }
 
@@ -179,23 +175,5 @@ public class MoviesFragment extends Fragment {
             }
         }
     }
-
-
-    public void addToFavourites(Movie movie) {
-
-        ContentValues values = new ContentValues();
-        values.put(FavouriteTitleColumns._ID, movie.id);
-        values.put(FavouriteTitleColumns.ORIGINAL_TITLE, movie.original_title);
-        values.put(FavouriteTitleColumns.OVERVIEW, movie.overview);
-        values.put(FavouriteTitleColumns.POSTER_PATH, movie.poster_path);
-        values.put(FavouriteTitleColumns.RELEASE_DATE, movie.release_date);
-        values.put(FavouriteTitleColumns.VOTE_AVERAGE, movie.vote_average);
-
-        getActivity().getContentResolver().insert(
-                FavouriteProvider.Favourites.CONTENT_URI,
-                values
-        );
-    }
-
 
 }
