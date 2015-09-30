@@ -12,7 +12,7 @@ import retrofit.http.Query;
  * Created by Rui on 13/09/2015.
  */
 public interface TMDBApiClient {
-    String TMDB_API_KEY = "ff272392c96fcc9d214c82c49e0631be"; //TODO Remove before pushing to master
+    String TMDB_API_KEY = ""; //TODO Remove before pushing to master
 
     @GET("/configuration?api_key=" + TMDB_API_KEY)
     TMDBConfiguration getConfiguration();
