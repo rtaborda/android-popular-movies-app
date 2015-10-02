@@ -1,14 +1,17 @@
 package com.rtaborda.popularmoviesapp;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -170,6 +173,22 @@ public class DetailsActivityFragment extends Fragment {
         );
 
         listViewVideos.setAdapter(_mVideosAdapter);
+
+        listViewVideos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Video video = _mVideosAdapter.getItem(position);
+                // based on http://stackoverflow.com/questions/574195/android-youtube-app-play-video-intent
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + video.key));
+                    startActivity(intent);
+                }catch (ActivityNotFoundException ex){
+                    Intent intent=new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://www.youtube.com/watch?v=" + video.key));
+                    startActivity(intent);
+                }
+            }
+        });
     }
 
     private void getReviews(){
@@ -214,12 +233,6 @@ public class DetailsActivityFragment extends Fragment {
             }
 
             VideosResult result = _tmdbApiClient.getVideos(params[0]);
-
-//            for (Movie movie : result.results){
-//                movie.PosterSmallURL = _configuration.images.base_url + _configuration.images.logo_sizes[4] + movie.poster_path;
-//                movie.PosterBigURL = _configuration.images.base_url + _configuration.images.poster_sizes[4] + movie.poster_path;
-//            }
-
             return result.results;
         }
 
@@ -234,7 +247,6 @@ public class DetailsActivityFragment extends Fragment {
     }
 
 
-
     private class FetchReviewsTask extends AsyncTask<String, Void, Review[]> {
         @Override
         protected Review[] doInBackground(String... params) {
@@ -243,12 +255,6 @@ public class DetailsActivityFragment extends Fragment {
             }
 
             ReviewsResult result = _tmdbApiClient.getReviews(params[0]);
-
-//            for (Movie movie : result.results){
-//                movie.PosterSmallURL = _configuration.images.base_url + _configuration.images.logo_sizes[4] + movie.poster_path;
-//                movie.PosterBigURL = _configuration.images.base_url + _configuration.images.poster_sizes[4] + movie.poster_path;
-//            }
-
             return result.results;
         }
 
