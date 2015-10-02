@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,11 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.rtaborda.popularmoviesapp.adapters.MoviePosterArrayAdapter;
 import com.rtaborda.popularmoviesapp.adapters.ReviewsArrayAdapter;
 import com.rtaborda.popularmoviesapp.adapters.VideosArrayAdapter;
 import com.rtaborda.popularmoviesapp.data.FavouriteProvider;
@@ -36,6 +35,7 @@ import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
 
@@ -45,7 +45,7 @@ import retrofit.client.OkClient;
 public class DetailsActivityFragment extends Fragment {
     private TMDBApiClient _tmdbApiClient = null;
 
-    private String _movieId;
+    private Movie _movie;
 
     private ReviewsArrayAdapter _mReviewsAdapter;
     private ArrayList<Review> _reviewArrayList;
@@ -58,8 +58,10 @@ public class DetailsActivityFragment extends Fragment {
     @Bind(R.id.textView_rating) TextView _rating;
     @Bind(R.id.textView_release) TextView _release;
     @Bind(R.id.imageView_poster) ImageView _poster;
-    @Bind((R.id.listview_reviews)) ListView listViewReviews;
-    @Bind((R.id.listview_videos)) ListView listViewVideos;
+    @Bind(R.id.listview_reviews) ListView _listViewReviews;
+    @Bind(R.id.listview_videos) ListView _listViewVideos;
+    @Bind(R.id.imageView_favourite) ImageView _imgFavourite;
+    @Bind(R.id.textView_favourite) TextView _txtFavourite;
 
     public DetailsActivityFragment() { }
 
@@ -81,7 +83,7 @@ public class DetailsActivityFragment extends Fragment {
                 // Set activity title to movie's title
                 parentActivity.setTitle(movie.original_title);
 
-                _movieId = movie.id;
+                _movie = movie;
                 _title.setText(movie.original_title);
                 _overview.setText(movie.overview);
                 _rating.setText(movie.vote_average.toString());
@@ -94,6 +96,8 @@ public class DetailsActivityFragment extends Fragment {
                 }
 
                 Picasso.with(getActivity()).load(movie.PosterBigURL).into(_poster);
+
+                loadFavouriteInfo(movie);
 
                 // set adapters
                 setReviewsAdapter();
@@ -118,7 +122,7 @@ public class DetailsActivityFragment extends Fragment {
     public void onStart(){
         super.onStart();
 
-        if(_movieId != null && _movieId != "") {
+        if(_movie != null) {
             if (_reviewArrayList == null || _reviewArrayList.size() == 0) {
                 getReviews();
             } else {
@@ -126,7 +130,7 @@ public class DetailsActivityFragment extends Fragment {
                 _mReviewsAdapter.clear(); // Clear actually clears the contents in the _movieArrayList
                 _reviewArrayList = aux;
                 _mReviewsAdapter.addAll(_reviewArrayList);
-                LayoutUtils.setListViewHeightBasedOnChildren(listViewReviews);
+                LayoutUtils.setListViewHeightBasedOnChildren(_listViewReviews);
             }
 
             if (_videoArrayList == null || _videoArrayList.size() == 0) {
@@ -136,7 +140,7 @@ public class DetailsActivityFragment extends Fragment {
                 _mVideosAdapter.clear(); // Clear actually clears the contents in the _movieArrayList
                 _videoArrayList = aux;
                 _mVideosAdapter.addAll(_videoArrayList);
-                LayoutUtils.setListViewHeightBasedOnChildren(listViewVideos);
+                LayoutUtils.setListViewHeightBasedOnChildren(_listViewVideos);
             }
         }
     }
@@ -152,7 +156,6 @@ public class DetailsActivityFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-
     private void setReviewsAdapter(){
         _reviewArrayList = new ArrayList<>();
         _mReviewsAdapter = new ReviewsArrayAdapter(
@@ -161,7 +164,7 @@ public class DetailsActivityFragment extends Fragment {
                 _reviewArrayList
         );
 
-        listViewReviews.setAdapter(_mReviewsAdapter);
+        _listViewReviews.setAdapter(_mReviewsAdapter);
     }
 
     private void setVideosAdapter(){
@@ -172,9 +175,9 @@ public class DetailsActivityFragment extends Fragment {
                 _videoArrayList
         );
 
-        listViewVideos.setAdapter(_mVideosAdapter);
+        _listViewVideos.setAdapter(_mVideosAdapter);
 
-        listViewVideos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        _listViewVideos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Video video = _mVideosAdapter.getItem(position);
@@ -182,8 +185,8 @@ public class DetailsActivityFragment extends Fragment {
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + video.key));
                     startActivity(intent);
-                }catch (ActivityNotFoundException ex){
-                    Intent intent=new Intent(Intent.ACTION_VIEW,
+                } catch (ActivityNotFoundException ex) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
                             Uri.parse("http://www.youtube.com/watch?v=" + video.key));
                     startActivity(intent);
                 }
@@ -195,14 +198,14 @@ public class DetailsActivityFragment extends Fragment {
         if(_tmdbApiClient == null){
             initializeTMDBApiClient();
         }
-        new FetchReviewsTask().execute(_movieId);
+        new FetchReviewsTask().execute(_movie.id);
     }
 
     private void getVideos(){
         if(_tmdbApiClient == null){
             initializeTMDBApiClient();
         }
-        new FetchVideosTask().execute(_movieId);
+        new FetchVideosTask().execute(_movie.id);
     }
 
     // TODO Extract this code as it's a duplicate from MoviesFragment
@@ -221,9 +224,7 @@ public class DetailsActivityFragment extends Fragment {
     private Boolean isStringNullOrEmpty(String str){
         return str == null || str.equals("") || str.equals("null");
     }
-
-
-
+    
 
     private class FetchVideosTask extends AsyncTask<String, Void, Video[]> {
         @Override
@@ -241,7 +242,7 @@ public class DetailsActivityFragment extends Fragment {
             if (result != null) {
                 _mVideosAdapter.clear();
                 _mVideosAdapter.addAll(result);
-                LayoutUtils.setListViewHeightBasedOnChildren(listViewVideos);
+                LayoutUtils.setListViewHeightBasedOnChildren(_listViewVideos);
             }
         }
     }
@@ -263,15 +264,23 @@ public class DetailsActivityFragment extends Fragment {
             if (result != null) {
                 _mReviewsAdapter.clear();
                 _mReviewsAdapter.addAll(result);
-                LayoutUtils.setListViewHeightBasedOnChildren(listViewReviews);
+                LayoutUtils.setListViewHeightBasedOnChildren(_listViewReviews);
             }
         }
     }
 
 
+    @OnClick(R.id.textView_favourite)
+    public void submit(View view) {
+        if(_txtFavourite.getText() == getText(R.string.activity_details_favourites_add)) {
+            addToFavourites(_movie);
+        }
+        else {
+            removeFromFavourites(_movie);
+        }
+    }
 
     public void addToFavourites(Movie movie) {
-
         ContentValues values = new ContentValues();
         values.put(FavouriteTitleColumns._ID, movie.id);
         values.put(FavouriteTitleColumns.ORIGINAL_TITLE, movie.original_title);
@@ -284,6 +293,44 @@ public class DetailsActivityFragment extends Fragment {
                 FavouriteProvider.Favourites.CONTENT_URI,
                 values
         );
+
+        setFavouriteOn();
+    }
+
+    public void removeFromFavourites(Movie movie) {
+        getActivity().getContentResolver().delete(
+                FavouriteProvider.Favourites.CONTENT_URI,
+                FavouriteTitleColumns._ID + " = ?",
+                new String[]{movie.id}
+        );
+
+        setFavouriteOff();
+    }
+
+    public void loadFavouriteInfo(Movie movie) {
+        Cursor favouriteCursor = getActivity().getContentResolver().query(
+                FavouriteProvider.Favourites.CONTENT_URI,
+                new String[]{FavouriteTitleColumns._ID},
+                FavouriteTitleColumns._ID + " = ?",
+                new String[]{movie.id},
+                null
+        );
+
+        if (favouriteCursor.getCount() == 0) {
+            setFavouriteOff();
+        } else {
+            setFavouriteOn();
+        }
+    }
+
+    public void setFavouriteOn(){
+        _txtFavourite.setText(R.string.activity_details_favourites_remove);
+        _imgFavourite.setImageResource(R.mipmap.ic_favourite_on);
+    }
+
+    public void setFavouriteOff(){
+        _txtFavourite.setText(R.string.activity_details_favourites_add);
+        _imgFavourite.setImageResource(R.mipmap.ic_favourite_off);
     }
 
 }

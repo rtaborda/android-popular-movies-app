@@ -7,4 +7,6 @@
     <string name="activity_details_title">DetailsActivity</string>
     <string name="activity_details_videos_title">Trailers</string>
     <string name="activity_details_reviews_title">Reviews</string>
+    <string name="activity_details_favourites_add">Add to Favourites</string>
+    <string name="activity_details_favourites_remove">Remove from Favourites</string>
 </resources>

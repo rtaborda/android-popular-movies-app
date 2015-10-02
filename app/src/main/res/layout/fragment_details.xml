@@ -12,12 +12,26 @@
         tools:context="com.rtaborda.popularmoviesapp.DetailsActivityFragment">
 
         <ImageView
+            android:id="@+id/imageView_favourite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" />
+
+        <TextView
+            android:id="@+id/textView_favourite"
+            android:text="@string/activity_details_reviews_title"
+            android:layout_marginTop="15dp"
+            android:layout_toRightOf="@+id/imageView_favourite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
             android:id="@+id/imageView_poster"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
+            android:layout_below="@+id/imageView_favourite"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="5dp" />
 
         <TextView
             android:id="@+id/textView_title"
