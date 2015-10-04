@@ -36,16 +36,6 @@ public final class FavouriteProvider {
                 type = "vnd.android.cursor.dir/favourite",
                 defaultSort = FavouriteTitleColumns.VOTE_AVERAGE + " DESC")
         public static final Uri CONTENT_URI = buildUri(Path.FAVOURITES);
-
-        /*@InexactContentUri(
-                name = "PLANET_ID",
-                path = Path.PLANETS + "/#",
-                type = "vnd.android.cursor.item/planet",
-                whereColumn = PlanetColumns._ID,
-                pathSegment = 1)
-        public static Uri withId(long id){
-            return buildUri(Path.PLANETS, String.valueOf(id));
-        }*/
     }
 
     @TableEndpoint(table = FavouriteDatabase.REVIEWS)

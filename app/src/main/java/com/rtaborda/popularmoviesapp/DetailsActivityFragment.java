@@ -224,7 +224,7 @@ public class DetailsActivityFragment extends Fragment {
     private Boolean isStringNullOrEmpty(String str){
         return str == null || str.equals("") || str.equals("null");
     }
-    
+
 
     private class FetchVideosTask extends AsyncTask<String, Void, Video[]> {
         @Override
@@ -285,7 +285,7 @@ public class DetailsActivityFragment extends Fragment {
         values.put(FavouriteTitleColumns._ID, movie.id);
         values.put(FavouriteTitleColumns.ORIGINAL_TITLE, movie.original_title);
         values.put(FavouriteTitleColumns.OVERVIEW, movie.overview);
-        values.put(FavouriteTitleColumns.POSTER_PATH, movie.poster_path);
+        values.put(FavouriteTitleColumns.POSTER_PATH, movie.PosterBigURL);
         values.put(FavouriteTitleColumns.RELEASE_DATE, movie.release_date);
         values.put(FavouriteTitleColumns.VOTE_AVERAGE, movie.vote_average);
 

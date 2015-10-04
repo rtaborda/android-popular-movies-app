@@ -14,5 +14,7 @@
     <string name="sort_by_popularity_desc_value" translatable="false">popularity.desc</string>
     <string name="sort_by_rating_desc_title">Highest-rated</string>
     <string name="sort_by_rating_desc_value" translatable="false">vote_average.desc</string>
+    <string name="sort_by_favourites_title">Favourites</string>
+    <string name="sort_by_favourites_value" translatable="false">favourites</string>
 
 </resources>
